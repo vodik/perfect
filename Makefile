@@ -1,19 +1,13 @@
-CFLAGS = -O
+CFLAGS := -std=c99 \
+	-Wall -Wextra -pedantic \
+	-Wshadow -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes \
+	${CFLAGS}
 
-.cc.o:
-	gcc $(CFLAGS) -c $<
+LDFLAGS = -lm
 
-O = lookupa.o recycle.o perfhex.o perfect.o
+perfect: lookupa.o recycle.o perfhex.o perfect.o
 
-const64 : $(O)
-	gcc -o perfect $(O) -lm
+clean:
+	${RM} perfect *.o
 
-# DEPENDENCIES
-
-lookupa.o : lookupa.c standard.h lookupa.h
-
-recycle.o : recycle.c standard.h recycle.h
-
-perfhex.o : perfhex.c standard.h lookupa.h recycle.h perfect.h
-
-perfect.o : perfect.c standard.h lookupa.h recycle.h perfect.h
+.PHONY: all clean install uninstall
