@@ -20,6 +20,9 @@
 # include "recycle.h"
 #endif
 
+#include <stdlib.h>
+#include <memory.h>
+
 reroot *remkroot(size_t size)
 {
     reroot *r = (reroot*)remalloc(sizeof(reroot), "recycle.c, root");
@@ -33,25 +36,27 @@ reroot *remkroot(size_t size)
 
 void  refree(struct reroot *r)
 {
-    recycle *temp;
-    if (temp = r->list) while (r->list) {
+    recycle *temp = r->list;
+    if (temp) {
+        while (r->list) {
             temp = r->list->next;
             free((char*)r->list);
             r->list = temp;
         }
+    }
     free((char*)r);
     return;
 }
 
 /* to be called from the macro renew only */
-char  *renewx(struct reroot *r)
+char *renewx(struct reroot *r)
 {
     recycle *temp;
     if (r->trash) { /* pull a node off the trash heap */
         temp = r->trash;
         r->trash = temp->next;
         memset((void*)temp, 0, r->size);
-    }else  { /* allocate a new block of nodes */
+    } else  { /* allocate a new block of nodes */
         r->numleft = r->size * ((uint32_t)1 << r->logsize);
         if (r->numleft < REMAX) ++r->logsize;
         temp = (recycle*)remalloc(sizeof(recycle) + r->numleft,
@@ -68,9 +73,9 @@ char   *remalloc(size_t len, char *purpose)
 {
     char *x = malloc(len);
     if (!x) {
-        fprintf(stderr, "malloc of %d failed for %s\n",
+        fprintf(stderr, "malloc of %zu failed for %s\n",
                 len, purpose);
-        exit(SUCCESS);
+        exit(EXIT_SUCCESS);
     }
     return x;
 }

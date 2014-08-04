@@ -27,6 +27,9 @@
 #include "perfect.h"
 #endif
 
+#include <stdlib.h>
+#include <stdbool.h>
+
 /*
  * Find a perfect hash when there is only one key.  Zero instructions.
  * Hint: the one key always hashes to 0
@@ -55,7 +58,7 @@ static void hextwo(key *keys, gencode *final)
 
     if (a == b) {
         printf("fatal error: duplicate keys\n");
-        exit(SUCCESS);
+        exit(EXIT_SUCCESS);
     }
 
     final->used = 1;
@@ -71,7 +74,7 @@ static void hextwo(key *keys, gencode *final)
         if ((a & ((uint32_t)1 << i)) != (b & ((uint32_t)1 << i))) break;
     }
     /* h2b: 4,6 */
-    sprintf(final->line[0], "  uint32_t rsl = ((val << %ld) & 1);\n", i);
+    sprintf(final->line[0], "  uint32_t rsl = ((val << %d) & 1);\n", i);
 }
 
 
@@ -110,7 +113,7 @@ static void hexthree(key *keys, gencode *final, hashform *form)
 
     if (a == b || a == c || b == c) {
         printf("fatal error: duplicate keys\n");
-        exit(SUCCESS);
+        exit(EXIT_SUCCESS);
     }
 
     /* one instruction */
@@ -135,10 +138,10 @@ static void hexthree(key *keys, gencode *final, hashform *form)
     if (x != y && x != z && y != z) {
         if (form->perfect == NORMAL_HP || (x != 3 && y != 3 && z != 3)) {
             /* h3c: 3fffffff, 7fffffff, bfffffff */
-            sprintf(final->line[0], "  uint32_t rsl = (val >> %ld);\n", (uint32_t)(UB4BITS - 2));
+            sprintf(final->line[0], "  uint32_t rsl = (val >> %d);\n", (uint32_t)(UB4BITS - 2));
         }else  {
             /* h3d: 7fffffff, bfffffff, ffffffff */
-            sprintf(final->line[0], "  uint32_t rsl = ((val >> %ld) ^ %ld);\n",
+            sprintf(final->line[0], "  uint32_t rsl = ((val >> %d) ^ %d);\n",
                     (uint32_t)(UB4BITS - 2), find_adder(x, y, z));
         }
         return;
@@ -152,10 +155,10 @@ static void hexthree(key *keys, gencode *final, hashform *form)
         if (x != y && x != z && y != z) {
             if (form->perfect == NORMAL_HP || (x != 3 && y != 3 && z != 3)) {
                 /* h3e: ffff3fff, ffff7fff, ffffbfff */
-                sprintf(final->line[0], "  uint32_t rsl = ((val >> %ld) & 3);\n", i);
+                sprintf(final->line[0], "  uint32_t rsl = ((val >> %d) & 3);\n", i);
             }else  {
                 /* h3f: ffff7fff, ffffbfff, ffffffff */
-                sprintf(final->line[0], "  uint32_t rsl = (((val >> %ld) & 3) ^ %ld);\n", i,
+                sprintf(final->line[0], "  uint32_t rsl = (((val >> %d) & 3) ^ %d);\n", i,
                         find_adder(x, y, z));
             }
             return;
@@ -170,10 +173,10 @@ static void hexthree(key *keys, gencode *final, hashform *form)
         if (x != y && x != z && y != z) {
             if (form->perfect == NORMAL_HP || (x != 3 && y != 3 && z != 3)) {
                 /* h3g: 0x000, 0x001, 0x100 */
-                sprintf(final->line[0], "  uint32_t rsl = ((val+(val>>%ld))&3);\n", i);
+                sprintf(final->line[0], "  uint32_t rsl = ((val+(val>>%d))&3);\n", i);
             }else  {
                 /* h3h: 0x001, 0x100, 0x101 */
-                sprintf(final->line[0], "  uint32_t rsl = (((val+(val>>%ld))&3)^%ld);\n", i,
+                sprintf(final->line[0], "  uint32_t rsl = (((val+(val>>%d))&3)^%d);\n", i,
                         find_adder(x, y, z));
             }
             return;
@@ -201,11 +204,11 @@ static void hexthree(key *keys, gencode *final, hashform *form)
                 if (form->perfect == NORMAL_HP || (x != 3 && y != 3 && z != 3)) {
                     /* h3i: 0x00, 0x04, 0x10 */
                     sprintf(final->line[0],
-                            "  uint32_t rsl = (((val>>%ld) ^ (val>>%ld)) & 3);\n", i, j);
+                            "  uint32_t rsl = (((val>>%d) ^ (val>>%d)) & 3);\n", i, j);
                 }else  {
                     /* h3j: 0x04, 0x10, 0x14 */
                     sprintf(final->line[0],
-                            "  uint32_t rsl = ((((val>>%ld) ^ (val>>%ld)) & 3) ^ %ld);\n",
+                            "  uint32_t rsl = ((((val>>%d) ^ (val>>%d)) & 3) ^ %d);\n",
                             i, j, find_adder(x, y, z));
                 }
                 return;
@@ -214,7 +217,7 @@ static void hexthree(key *keys, gencode *final, hashform *form)
     }
 
     printf("fatal error: hexthree\n");
-    exit(SUCCESS);
+    exit(EXIT_SUCCESS);
 }
 
 
@@ -246,7 +249,7 @@ static void hexfour(key *keys, gencode *final)
 
     if (a == b || a == c || a == d || b == c || b == d || c == d) {
         printf("fatal error: Duplicate keys\n");
-        exit(SUCCESS);
+        exit(EXIT_SUCCESS);
     }
 
     final->used = 1;
@@ -269,7 +272,7 @@ static void hexfour(key *keys, gencode *final)
         y = c >> (UB4BITS - 2);
         z = d >> (UB4BITS - 2);
         if (testfour(w, x, y, z)) { /* h4b: 0fffffff, 4fffffff, 8fffffff, cfffffff */
-            sprintf(final->line[0], "  uint32_t rsl = (val >> %ld);\n", (uint32_t)(UB4BITS - 2));
+            sprintf(final->line[0], "  uint32_t rsl = (val >> %d);\n", (uint32_t)(UB4BITS - 2));
             return;
         }
     }
@@ -282,7 +285,7 @@ static void hexfour(key *keys, gencode *final)
             y = (c >> i) & 3;
             z = (d >> i) & 3;
             if (testfour(w, x, y, z)) {                      /* h4c: 0,2,4,6 */
-                sprintf(final->line[0], "  uint32_t rsl = ((val >> %ld) & 3);\n", i);
+                sprintf(final->line[0], "  uint32_t rsl = ((val >> %d) & 3);\n", i);
                 return;
             }
         }
@@ -298,7 +301,7 @@ static void hexfour(key *keys, gencode *final)
                 z = (d + (d >> i)) & 3;
                 if (testfour(w, x, y, z)) {              /* h4d: 0,1,2,4 */
                     sprintf(final->line[0],
-                            "  uint32_t rsl = ((val + (val >> %ld)) & 3);\n", i);
+                            "  uint32_t rsl = ((val + (val >> %d)) & 3);\n", i);
                     return;
                 }
 
@@ -308,7 +311,7 @@ static void hexfour(key *keys, gencode *final)
                 z = (d - (d >> i)) & 3;
                 if (testfour(w, x, y, z)) {              /* h4e: 0,1,3,5 */
                     sprintf(final->line[0],
-                            "  uint32_t rsl = ((val - (val >> %ld)) & 3);\n", i);
+                            "  uint32_t rsl = ((val - (val >> %d)) & 3);\n", i);
                     return;
                 }
 
@@ -320,7 +323,7 @@ static void hexfour(key *keys, gencode *final)
                 z = (d ^ (d >> i)) & 3;
                 if (testfour(w, x, y, z)) {              /* h4g: 3,4,5,8 */
                     sprintf(final->line[0],
-                            "  uint32_t rsl = ((val ^ (val >> %ld)) & 3);\n", i);
+                            "  uint32_t rsl = ((val ^ (val >> %d)) & 3);\n", i);
                     return;
                 }
             }
@@ -338,7 +341,7 @@ static void hexfour(key *keys, gencode *final)
                 z = (d & 3) ^ ((d >> i) & 1);
                 if (testfour(w, x, y, z)) {              /* h4h: 1,2,6,8 */
                     sprintf(final->line[0],
-                            "  uint32_t rsl = ((val & 3) ^ ((val >> %ld) & 1));\n", i);
+                            "  uint32_t rsl = ((val & 3) ^ ((val >> %d) & 1));\n", i);
                     return;
                 }
 
@@ -348,7 +351,7 @@ static void hexfour(key *keys, gencode *final)
                 z = (d & 2) ^ ((d >> i) & 1);
                 if (testfour(w, x, y, z)) {              /* h4i: 1,2,8,a */
                     sprintf(final->line[0],
-                            "  uint32_t rsl = ((val & 2) ^ ((val >> %ld) & 1));\n", i);
+                            "  uint32_t rsl = ((val & 2) ^ ((val >> %d) & 1));\n", i);
                     return;
                 }
             }
@@ -361,7 +364,7 @@ static void hexfour(key *keys, gencode *final)
                 z = (d & 3) ^ ((d >> i) & 2);
                 if (testfour(w, x, y, z)) {              /* h4j: 0,1,3,4 */
                     sprintf(final->line[0],
-                            "  uint32_t rsl = ((val & 3) ^ ((val >> %ld) & 2));\n", i);
+                            "  uint32_t rsl = ((val & 3) ^ ((val >> %d) & 2));\n", i);
                     return;
                 }
 
@@ -371,7 +374,7 @@ static void hexfour(key *keys, gencode *final)
                 z = (d & 1) ^ ((d >> i) & 2);
                 if (testfour(w, x, y, z)) {              /* h4k: 1,4,7,8 */
                     sprintf(final->line[0],
-                            "  uint32_t rsl = ((val & 1) ^ ((val >> %ld) & 2));\n", i);
+                            "  uint32_t rsl = ((val & 1) ^ ((val >> %d) & 2));\n", i);
                     return;
                 }
             }
@@ -390,7 +393,7 @@ static void hexfour(key *keys, gencode *final)
                     z = ((d >> i) + (a >> j)) & 3;
                     if (testfour(w, x, y, z)) {        /* h4l: testcase? */
                         sprintf(final->line[0],
-                                "  uint32_t rsl = (((val >> %ld) + (val >> %ld)) & 3);\n",
+                                "  uint32_t rsl = (((val >> %d) + (val >> %d)) & 3);\n",
                                 i, j);
                         return;
                     }
@@ -402,7 +405,7 @@ static void hexfour(key *keys, gencode *final)
                     z = ((d >> i) - (a >> j)) & 3;
                     if (testfour(w, x, y, z)) {        /* h4m: testcase? */
                         sprintf(final->line[0],
-                                "  uint32_t rsl = (((val >> %ld) - (val >> %ld)) & 3);\n",
+                                "  uint32_t rsl = (((val >> %d) - (val >> %d)) & 3);\n",
                                 i, j);
                         return;
                     }
@@ -414,7 +417,7 @@ static void hexfour(key *keys, gencode *final)
                     z = ((d >> i) ^ (a >> j)) & 3;
                     if (testfour(w, x, y, z)) {        /* h4n: testcase? */
                         sprintf(final->line[0],
-                                "  uint32_t rsl = (((val >> %ld) ^ (val >> %ld)) & 3);\n",
+                                "  uint32_t rsl = (((val >> %d) ^ (val >> %d)) & 3);\n",
                                 i, j);
                         return;
                     }
@@ -434,7 +437,7 @@ static void hexfour(key *keys, gencode *final)
                     z = ((d >> j) & 3) ^ ((d >> i) & 1);
                     if (testfour(w, x, y, z)) {          /* h4o: 0,4,8,a */
                         sprintf(final->line[0],
-                                "  uint32_t rsl = (((val >> %ld) & 3) ^ ((val >> %ld) & 1));\n",
+                                "  uint32_t rsl = (((val >> %d) & 3) ^ ((val >> %d) & 1));\n",
                                 j, i);
                         return;
                     }
@@ -445,7 +448,7 @@ static void hexfour(key *keys, gencode *final)
                     z = ((d >> j) & 2) ^ ((d >> i) & 1);
                     if (testfour(w, x, y, z)) { /* h4p: 0x04, 0x08, 0x10, 0x14 */
                         sprintf(final->line[0],
-                                "  uint32_t rsl = (((val >> %ld) & 2) ^ ((val >> %ld) & 1));\n",
+                                "  uint32_t rsl = (((val >> %d) & 2) ^ ((val >> %d) & 1));\n",
                                 j, i);
                         return;
                     }
@@ -465,15 +468,15 @@ static void hexfour(key *keys, gencode *final)
                 if (testfour(w, x, y, z)) {
                     if (i == 0) {                        /* h4q: 0,4,5,8 */
                         sprintf(final->line[0],
-                                "  uint32_t rsl = (((val >> %ld) ^ (val << 1)) & 3);\n",
+                                "  uint32_t rsl = (((val >> %d) ^ (val << 1)) & 3);\n",
                                 j);
                     }else if (i == 1) {      /* h4r: 0x01,0x09,0x0b,0x10 */
                         sprintf(final->line[0],
-                                "  uint32_t rsl = (((val >> %ld) & 3) ^ (val & 2));\n",
+                                "  uint32_t rsl = (((val >> %d) & 3) ^ (val & 2));\n",
                                 j);
                     }else  {                             /* h4s: 0,2,6,8 */
                         sprintf(final->line[0],
-                                "  uint32_t rsl = (((val >> %ld) & 3) ^ ((val >> %ld) & 2));\n",
+                                "  uint32_t rsl = (((val >> %d) & 3) ^ ((val >> %d) & 2));\n",
                                 j, (i - 1));
                     }
                     return;
@@ -485,7 +488,7 @@ static void hexfour(key *keys, gencode *final)
                 z = ((d >> j) & 1) ^ ((d >> i) & 2);
                 if (testfour(w, x, y, z)) {  /* h4t: 0x20,0x14,0x10,0x06 */
                     sprintf(final->line[0],
-                            "  uint32_t rsl = (((val >> %ld) & 1) ^ ((val >> %ld) & 2));\n",
+                            "  uint32_t rsl = (((val >> %d) & 1) ^ ((val >> %d) & 2));\n",
                             j, i);
                     return;
                 }
@@ -531,8 +534,8 @@ static void hexfour(key *keys, gencode *final)
 
     /* Assert: bits i,j,k were found which distinguish a,b,c,d */
     if (i == UB4BITS || j == UB4BITS || k == UB4BITS) {
-        printf("Fatal error: hexfour(), i %ld j %ld k %ld\n", i, j, k);
-        exit(SUCCESS);
+        printf("Fatal error: hexfour(), i %d j %d k %d\n", i, j, k);
+        exit(EXIT_SUCCESS);
     }
 
     /* now try the four cases */
@@ -549,7 +552,7 @@ static void hexfour(key *keys, gencode *final)
             p = m; m = n; n = p;
         }                                                 /* guarantee m < n */
 
-        /* printf("m %ld n %ld o %ld  %ld %ld %ld %ld\n", m, n, o, w,x,y,z); */
+        /* printf("m %d n %d o %d  %d %d %d %d\n", m, n, o, w,x,y,z); */
 
         /* seven instructions, multiply bit o by 1 */
         w = (((a >> m) ^ (a >> o)) & 1) ^ ((a >> (n - 1)) & 2);
@@ -563,10 +566,10 @@ static void hexfour(key *keys, gencode *final)
 
             if (m == 0) {                                         /* 0,2,8,9 */
                 sprintf(final->line[0],
-                        "  uint32_t rsl = (((val^(val>>%ld))&1)^((val>>%ld)&2));\n", o, n - 1);
+                        "  uint32_t rsl = (((val^(val>>%d))&1)^((val>>%d)&2));\n", o, n - 1);
             }else  {                                  /* 0x00,0x04,0x10,0x12 */
                 sprintf(final->line[0],
-                        "  uint32_t rsl = ((((val>>%ld) ^ (val>>%ld)) & 1) ^ ((val>>%ld) & 2));\n",
+                        "  uint32_t rsl = ((((val>>%d) ^ (val>>%d)) & 1) ^ ((val>>%d) & 2));\n",
                         m, o, n - 1);
             }
             return;
@@ -584,15 +587,15 @@ static void hexfour(key *keys, gencode *final)
 
             if (m == 0) {                                         /* 0,1,5,8 */
                 sprintf(final->line[0],
-                        "  uint32_t rsl = ((val & 1) ^ (((val>>%ld) ^ (val>>%ld)) & 2));\n",
+                        "  uint32_t rsl = ((val & 1) ^ (((val>>%d) ^ (val>>%d)) & 2));\n",
                         n - 1, o - 1);
             }else if (o == 0) {                       /* 0x00,0x04,0x05,0x10 */
                 sprintf(final->line[0],
-                        "  uint32_t rsl = (((val>>%ld) & 2) ^ (((val>>%ld) ^ val) & 1));\n",
+                        "  uint32_t rsl = (((val>>%d) & 2) ^ (((val>>%d) ^ val) & 1));\n",
                         m - 1, n);
             }else  {                                  /* 0x00,0x02,0x0a,0x10 */
                 sprintf(final->line[0],
-                        "  uint32_t rsl = (((val>>%ld) & 1) ^ (((val>>%ld) ^ (val>>%ld)) & 2));\n",
+                        "  uint32_t rsl = (((val>>%d) & 1) ^ (((val>>%d) ^ (val>>%d)) & 2));\n",
                         m, n - 1, o - 1);
             }
             return;
@@ -605,43 +608,43 @@ static void hexfour(key *keys, gencode *final)
         z = (((d >> m) & 1) ^ ((d >> (n - 1)) & 2)) ^ ((d >> o) & 1) ^ (((d >> o) & 1) << 1);
         if (testfour(w, x, y, z)) {
             final->used = 2;
-            sprintf(final->line[0], "  uint32_t b = (val >> %ld) & 1;\n", o);
+            sprintf(final->line[0], "  uint32_t b = (val >> %d) & 1;\n", o);
             if (m == o - 1 && m == 0) {               /* 0x02,0x10,0x11,0x18 */
                 sprintf(final->line[1],
-                        "  uint32_t rsl = ((val & 3) ^ ((val >> %ld) & 2) ^ b);\n", n - 1);
+                        "  uint32_t rsl = ((val & 3) ^ ((val >> %d) & 2) ^ b);\n", n - 1);
             }else if (m == o - 1) {                               /* 0,4,6,c */
                 sprintf(final->line[1],
-                        "  uint32_t rsl = (((val >> %ld) & 3) ^ ((val >> %ld) & 2) ^ b);\n",
+                        "  uint32_t rsl = (((val >> %d) & 3) ^ ((val >> %d) & 2) ^ b);\n",
                         m, n - 1);
             }else if (m == n - 1 && m == 0) {                 /* 02,0a,0b,18 */
                 sprintf(final->line[1],
                         "  uint32_t rsl = ((val & 3) ^ b ^ (b << 1));\n");
             }else if (m == n - 1) {                               /* 0,2,4,8 */
                 sprintf(final->line[1],
-                        "  uint32_t rsl = (((val >> %ld) & 3) ^ b ^ (b << 1));\n", m);
+                        "  uint32_t rsl = (((val >> %d) & 3) ^ b ^ (b << 1));\n", m);
             }else if (o == n - 1 && m == 0) {           /* h4am: not reached */
                 sprintf(final->line[1],
-                        "  uint32_t rsl = ((val & 1) ^ ((val >> %ld) & 3) ^ (b <<1 ));\n",
+                        "  uint32_t rsl = ((val & 1) ^ ((val >> %d) & 3) ^ (b <<1 ));\n",
                         o);
             }else if (o == n - 1) {                   /* 0x00,0x02,0x08,0x10 */
                 sprintf(final->line[1],
-                        "  uint32_t rsl = (((val >> %ld) & 1) ^ ((val >> %ld) & 3) ^ (b << 1));\n",
+                        "  uint32_t rsl = (((val >> %d) & 1) ^ ((val >> %d) & 3) ^ (b << 1));\n",
                         m, o);
             }else if ((m != o - 1) && (m != n - 1) && (o != m - 1) && (o != n - 1)) {
                 final->used = 3;
-                sprintf(final->line[0], "  uint32_t newval = val & 0x%lx;\n",
+                sprintf(final->line[0], "  uint32_t newval = val & 0x%x;\n",
                         (((uint32_t)1 << m) ^ ((uint32_t)1 << n) ^ ((uint32_t)1 << o)));
                 if (o == 0) {                     /* 0x00,0x01,0x04,0x10 */
                     sprintf(final->line[1], "  uint32_t b = -newval;\n");
                 }else  {                          /* 0x00,0x04,0x09,0x10 */
-                    sprintf(final->line[1], "  uint32_t b = -(newval >> %ld);\n", o);
+                    sprintf(final->line[1], "  uint32_t b = -(newval >> %d);\n", o);
                 }
                 if (m == 0) {                     /* 0x00,0x04,0x09,0x10 */
                     sprintf(final->line[2],
-                            "  uint32_t rsl = ((newval ^ (newval>>%ld) ^ b) & 3);\n", n - 1);
+                            "  uint32_t rsl = ((newval ^ (newval>>%d) ^ b) & 3);\n", n - 1);
                 }else  {                          /* 0x00,0x03,0x04,0x10 */
                     sprintf(final->line[2],
-                            "  uint32_t rsl = (((newval>>%ld) ^ (newval>>%ld) ^ b) & 3);\n",
+                            "  uint32_t rsl = (((newval>>%d) ^ (newval>>%d) ^ b) & 3);\n",
                             m, n - 1);
                 }
             }else if (o == m - 1) {
@@ -650,21 +653,21 @@ static void hexfour(key *keys, gencode *final)
                 }else if (o == 1) {               /* 0x00,0x02,0x04,0x10 */
                     sprintf(final->line[0], "  uint32_t b = val & 2;\n");
                 }else  {                          /* 0x00,0x04,0x08,0x20 */
-                    sprintf(final->line[0], "  uint32_t b = (val>>%ld) & 2;\n", o - 1);
+                    sprintf(final->line[0], "  uint32_t b = (val>>%d) & 2;\n", o - 1);
                 }
 
                 if (o == 0) {                     /* 0x02,0x03,0x0a,0x10 */
                     sprintf(final->line[1],
-                            "  uint32_t rsl = ((val & 3) ^ ((val>>%ld) & 1) ^ b);\n",
+                            "  uint32_t rsl = ((val & 3) ^ ((val>>%d) & 1) ^ b);\n",
                             n);
                 }else  {                          /* 0x00,0x02,0x04,0x10 */
                     sprintf(final->line[1],
-                            "  uint32_t rsl = (((val>>%ld) & 3) ^ ((val>>%ld) & 1) ^ b);\n",
+                            "  uint32_t rsl = (((val>>%d) & 3) ^ ((val>>%d) & 1) ^ b);\n",
                             o, n);
                 }
             }else  {               /* h4ax: 10 instructions, but not reached */
                 sprintf(final->line[1],
-                        "  uint32_t rsl = (((val>>%ld) & 1) ^ ((val>>%ld) & 2) ^ b ^ (b<<1));\n",
+                        "  uint32_t rsl = (((val>>%d) & 1) ^ ((val>>%d) & 2) ^ b ^ (b<<1));\n",
                         m, n - 1);
             }
 
@@ -678,28 +681,28 @@ static void hexfour(key *keys, gencode *final)
         z = ((d >> m) & 1) ^ (d >> (n - 1) & 2);
         if (testfour(w, x, y, z)) {                      /* h4v, not reached */
             sprintf(final->line[0],
-                    "  uint32_t rsl = (((val>>%ld) & 1) ^ ((val>>%ld) & 2));\n", m, n - 1);
+                    "  uint32_t rsl = (((val>>%d) & 1) ^ ((val>>%d) & 2));\n", m, n - 1);
             return;
         }
     }
 
     printf("fatal error: bug in hexfour!\n");
-    exit(SUCCESS);
+    exit(EXIT_SUCCESS);
     return;
 }
 
 
 /* test if a_k is distinct and in range for all keys */
-static int testeight(key *keys, uint8_t badmask)
+static bool testeight(key *keys, uint8_t badmask)
 {
     uint8_t mask = badmask;
     key *mykey;
 
     for (mykey = keys; mykey; mykey = mykey->next_k) {
-        if (bit(mask, 1 << mykey->a_k)) return FALSE;
+        if (bit(mask, 1 << mykey->a_k)) return false;
         bis(mask, 1 << mykey->a_k);
     }
-    return TRUE;
+    return true;
 }
 
 
@@ -708,9 +711,9 @@ static int testeight(key *keys, uint8_t badmask)
  * Try to find a perfect hash when there are five to eight keys.
  *
  * We can't deterministically find a perfect hash, but there's a reasonable
- * chance we'll get lucky.  Give it a shot.  Return TRUE if we succeed.
+ * chance we'll get lucky.  Give it a shot.  Return true if we succeed.
  */
-static int hexeight(key *keys, uint32_t nkeys, gencode *final, hashform *form)
+static bool hexeight(key *keys, uint32_t nkeys, gencode *final, hashform *form)
 {
     key *mykey;                                     /* walk through the keys */
     uint32_t i, j, k;
@@ -731,7 +734,7 @@ static int hexeight(key *keys, uint32_t nkeys, gencode *final, hashform *form)
     if (testeight(keys, badmask)) {                                   /* h8a */
         final->used = 1;
         sprintf(final->line[0], "  uint32_t rsl = (val & 7);\n");
-        return TRUE;
+        return true;
     }
 
     /* two instructions */
@@ -740,8 +743,8 @@ static int hexeight(key *keys, uint32_t nkeys, gencode *final, hashform *form)
             mykey->a_k = (mykey->hash_k >> i) & 7;
         if (testeight(keys, badmask)) {                               /* h8b */
             final->used = 1;
-            sprintf(final->line[0], "  uint32_t rsl = ((val >> %ld) & 7);\n", i);
-            return TRUE;
+            sprintf(final->line[0], "  uint32_t rsl = ((val >> %d) & 7);\n", i);
+            return true;
         }
     }
 
@@ -754,11 +757,11 @@ static int hexeight(key *keys, uint32_t nkeys, gencode *final, hashform *form)
                 final->used = 1;
                 if (i == 0)                                       /* h8c */
                     sprintf(final->line[0],
-                            "  uint32_t rsl = ((val + (val >> %ld)) & 7);\n", j);
+                            "  uint32_t rsl = ((val + (val >> %d)) & 7);\n", j);
                 else                                              /* h8d */
                     sprintf(final->line[0],
-                            "  uint32_t rsl = (((val >> %ld) + (val >> %ld)) & 7);\n", i, j);
-                return TRUE;
+                            "  uint32_t rsl = (((val >> %d) + (val >> %d)) & 7);\n", i, j);
+                return true;
             }
 
             for (mykey = keys; mykey; mykey = mykey->next_k)
@@ -767,12 +770,12 @@ static int hexeight(key *keys, uint32_t nkeys, gencode *final, hashform *form)
                 final->used = 1;
                 if (i == 0)                                       /* h8e */
                     sprintf(final->line[0],
-                            "  uint32_t rsl = ((val ^ (val >> %ld)) & 7);\n", j);
+                            "  uint32_t rsl = ((val ^ (val >> %d)) & 7);\n", j);
                 else                                              /* h8f */
                     sprintf(final->line[0],
-                            "  uint32_t rsl = (((val >> %ld) ^ (val >> %ld)) & 7);\n", i, j);
+                            "  uint32_t rsl = (((val >> %d) ^ (val >> %d)) & 7);\n", i, j);
 
-                return TRUE;
+                return true;
             }
 
             for (mykey = keys; mykey; mykey = mykey->next_k)
@@ -781,12 +784,12 @@ static int hexeight(key *keys, uint32_t nkeys, gencode *final, hashform *form)
                 final->used = 1;
                 if (i == 0)                                       /* h8g */
                     sprintf(final->line[0],
-                            "  uint32_t rsl = ((val - (val >> %ld)) & 7);\n", j);
+                            "  uint32_t rsl = ((val - (val >> %d)) & 7);\n", j);
                 else                                              /* h8h */
                     sprintf(final->line[0],
-                            "  uint32_t rsl = (((val >> %ld) - (val >> %ld)) & 7);\n", i, j);
+                            "  uint32_t rsl = (((val >> %d) - (val >> %d)) & 7);\n", i, j);
 
-                return TRUE;
+                return true;
             }
         }
     }
@@ -803,16 +806,16 @@ static int hexeight(key *keys, uint32_t nkeys, gencode *final, hashform *form)
                 if (testeight(keys, badmask)) {                   /* h8i */
                     final->used = 1;
                     sprintf(final->line[0],
-                            "  uint32_t rsl = (((val >> %ld) + (val >> %ld) + (val >> %ld)) & 7);\n",
+                            "  uint32_t rsl = (((val >> %d) + (val >> %d) + (val >> %d)) & 7);\n",
                             i, j, k);
-                    return TRUE;
+                    return true;
                 }
             }
         }
     }
 
 
-    return FALSE;
+    return false;
 }
 
 
@@ -858,16 +861,16 @@ static void hexn(key *keys, uint32_t salt, uint32_t alen, uint32_t blen, gencode
                 mykey->b_k = (mykey->hash_k >> lowbit) & (blen - 1);
             }
             if (lowbit == 0)                                          /* hna */
-                sprintf(final->line[5], "  b = (val & 0x%lx);\n",
+                sprintf(final->line[5], "  b = (val & 0x%x);\n",
                         blen - 1);
             else                                                      /* hnb */
-                sprintf(final->line[5], "  b = ((val >> %ld) & 0x%lx);\n",
+                sprintf(final->line[5], "  b = ((val >> %d) & 0x%x);\n",
                         lowbit, blen - 1);
             if (highbit + 1 == UB4BITS)                               /* hnc */
-                sprintf(final->line[6], "  a = (val >> %ld);\n",
+                sprintf(final->line[6], "  a = (val >> %zu);\n",
                         UB4BITS - alog);
             else                                                      /* hnd */
-                sprintf(final->line[6], "  a = ((val << %ld ) >> %ld);\n",
+                sprintf(final->line[6], "  a = ((val << %zu ) >> %zu);\n",
                         UB4BITS - (highbit + 1), UB4BITS - alog);
 
             ++final->i;
@@ -880,16 +883,16 @@ static void hexn(key *keys, uint32_t salt, uint32_t alen, uint32_t blen, gencode
                 mykey->b_k = (mykey->hash_k << (UB4BITS - (highbit + 1))) >> (UB4BITS - blog);
             }
             if (highbit + 1 == UB4BITS)                               /* hne */
-                sprintf(final->line[5], "  b = (val >> %ld);\n",
+                sprintf(final->line[5], "  b = (val >> %zu);\n",
                         UB4BITS - blog);
             else                                                      /* hnf */
-                sprintf(final->line[5], "  b = ((val << %ld ) >> %ld);\n",
+                sprintf(final->line[5], "  b = ((val << %zu ) >> %zu);\n",
                         UB4BITS - (highbit + 1), UB4BITS - blog);
             if (lowbit == 0)                                          /* hng */
-                sprintf(final->line[6], "  a = (val & 0x%lx);\n",
+                sprintf(final->line[6], "  a = (val & 0x%x);\n",
                         alen - 1);
             else                                                      /* hnh */
-                sprintf(final->line[6], "  a = ((val >> %ld) & 0x%lx);\n",
+                sprintf(final->line[6], "  a = ((val >> %d) & 0x%x);\n",
                         lowbit, alen - 1);
 
             ++final->i;
@@ -918,19 +921,19 @@ static void hexn(key *keys, uint32_t salt, uint32_t alen, uint32_t blen, gencode
                 mykey->a_k = (mykey->hash_k << (UB4BITS - final->k - 1)) >> (UB4BITS - alog);
             }
             if (final->j == 0)                                        /* hni */
-                sprintf(final->line[5], "  b = val & 0x%lx;\n",
+                sprintf(final->line[5], "  b = val & 0x%x;\n",
                         blen - 1);
             else if (blog + final->j == UB4BITS)                     /* hnja */
-                sprintf(final->line[5], "  b = val >> %ld;\n",
+                sprintf(final->line[5], "  b = val >> %d;\n",
                         final->j);
             else
-                sprintf(final->line[5], "  b = (val >> %ld) & 0x%lx;\n", /* hnj */
+                sprintf(final->line[5], "  b = (val >> %d) & 0x%x;\n", /* hnj */
                         final->j, blen - 1);
             if (UB4BITS - final->k - 1 == 0)                          /* hnk */
-                sprintf(final->line[6], "  a = (val >> %ld);\n",
+                sprintf(final->line[6], "  a = (val >> %zu);\n",
                         UB4BITS - alog);
             else                                                      /* hnl */
-                sprintf(final->line[6], "  a = ((val << %ld) >> %ld);\n",
+                sprintf(final->line[6], "  a = ((val << %zu) >> %zu);\n",
                         UB4BITS - final->k - 1, UB4BITS - alog);
             while (++final->j < highbit) {
                 if (((final->diffbits >> (final->j)) & (blen - 1)) > 2)
@@ -991,21 +994,21 @@ static void hexn(key *keys, uint32_t salt, uint32_t alen, uint32_t blen, gencode
                 else
                     mykey->a_k = (val + (val << final->k)) >> (UB4BITS - alog);
             }
-            sprintf(final->line[1], "  val += 0x%lx;\n", addk);
+            sprintf(final->line[1], "  val += 0x%x;\n", addk);
             if (final->highbit + 1 - final->lowbit > 16)          /* hnm */
                 sprintf(final->line[2], "  val ^= (val >> 16);\n");
             if (final->highbit + 1 - final->lowbit > 8)           /* hnn */
                 sprintf(final->line[3], "  val += (val << 8);\n");
             sprintf(final->line[4], "  val ^= (val >> 4);\n");
             if (final->j == 0)      /* hno: don't know how to reach this */
-                sprintf(final->line[5], "  b = val & 0x%lx;\n", blen - 1);
+                sprintf(final->line[5], "  b = val & 0x%x;\n", blen - 1);
             else                                                  /* hnp */
-                sprintf(final->line[5], "  b = (val >> %ld) & 0x%lx;\n",
+                sprintf(final->line[5], "  b = (val >> %d) & 0x%x;\n",
                         final->j, blen - 1);
             if (final->k == 0)                                    /* hnq */
-                sprintf(final->line[6], "  a = val >> %ld;\n", UB4BITS - alog);
+                sprintf(final->line[6], "  a = val >> %zu;\n", UB4BITS - alog);
             else                                                  /* hnr */
-                sprintf(final->line[6], "  a = (val + (val << %ld)) >> %ld;\n",
+                sprintf(final->line[6], "  a = (val + (val << %d)) >> %zu;\n",
                         final->k, UB4BITS - alog);
 
             ++final->j;
@@ -1034,8 +1037,6 @@ static void hexn(key *keys, uint32_t salt, uint32_t alen, uint32_t blen, gencode
 /* find the highest and lowest bit where any key differs */
 static void setlow(key *keys, gencode *final)
 {
-    uint32_t lowbit;
-    uint32_t highbit;
     uint32_t i;
     key *mykey;
     uint32_t firstkey;
@@ -1076,30 +1077,31 @@ static void setlow(key *keys, gencode *final)
  * is 3 to 16 keys, and instruction counts matter.  The competition is a
  * binary tree of branches.
  *
- * Return TRUE if we found a perfect hash and no more work is needed.
- * Return FALSE if we just did an initial hash and more work is needed.
+ * Return true if we found a perfect hash and no more work is needed.
+ * Return false if we just did an initial hash and more work is needed.
  */
-int inithex(key *keys, uint32_t nkeys, uint32_t alen, uint32_t blen, uint32_t smax, uint32_t salt, gencode *final, hashform *form)
+bool inithex(key *keys, uint32_t nkeys, uint32_t alen, uint32_t blen, uint32_t salt,
+             gencode *final, hashform *form)
 {
     setlow(keys, final);
 
     switch (nkeys) {
     case 1:
         hexone(keys, final);
-        return TRUE;
+        return true;
     case 2:
         hextwo(keys, final);
-        return TRUE;
+        return true;
     case 3:
         hexthree(keys, final, form);
-        return TRUE;
+        return true;
     case 4:
         hexfour(keys, final);
-        return TRUE;
+        return true;
     case 5:  case 6:  case 7:  case 8:
         if (salt == 1 &&                              /* first time through */
             hexeight(keys, nkeys, final, form)) /* get lucky, don't need tab[] ? */
-            return TRUE;
+            return true;
     /* fall through */
     default:
         if (salt == 1) {
@@ -1120,6 +1122,6 @@ int inithex(key *keys, uint32_t nkeys, uint32_t alen, uint32_t blen, uint32_t sm
             }
         }
         hexn(keys, salt, alen, blen, final);
-        return FALSE;
+        return false;
     }
 }
