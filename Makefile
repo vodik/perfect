@@ -6,8 +6,9 @@ CFLAGS := -std=c99 \
 LDFLAGS = -lm
 
 perfect: lookupa.o recycle.o perfhex.o perfect.o
+testperf: testperf.o recycle.o phash.o lookupa.o
 
 clean:
-	${RM} perfect *.o
+	${RM} perfect perftest *.o
 
 .PHONY: all clean install uninstall

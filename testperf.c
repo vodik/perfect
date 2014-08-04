@@ -5,7 +5,11 @@
  * ----------------------------------------------------------------------------
  */
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "standard.h"
 #include "recycle.h"
@@ -42,8 +46,8 @@ static void getkeys(key **keys, uint32_t *nkeys, reroot *textroot, reroot *keyro
     *nkeys = (uint32_t)0;
     while (fgets(mytext, MAXKEYLEN, stdin)) {
         mykey = (key*)renew(keyroot);
-        mykey->kname = (uint8_t*)mytext;
-        mytext = (char*)renew(textroot);
+        mykey->kname = (char *)mytext;
+        mytext = (char *)renew(textroot);
         mykey->klen = (uint32_t)(strlen((char*)mykey->kname) - 1);
         mykey->knext = *keys;
         *keys = mykey;
@@ -51,7 +55,6 @@ static void getkeys(key **keys, uint32_t *nkeys, reroot *textroot, reroot *keyro
     }
     redel(textroot, mytext);
 }
-
 
 /*
  * ------------------------------------------------------------------------------
@@ -72,7 +75,7 @@ static void driver(hashform *form)
 
     /* read in the list of keywords */
     getkeys(&keys, &nkeys, textroot, keyroot);
-    printf("Read in %ld keys\n", nkeys);
+    printf("Read in %d keys\n", nkeys);
 
     for (mykey = keys; mykey; mykey = mykey->knext) {
         uint32_t hash;
@@ -91,19 +94,19 @@ static void driver(hashform *form)
             hash = phash(hash);
             break;
         case HEX_HM:
-            sscanf(mykey->kname, "%lx ", &hash);
+            sscanf(mykey->kname, "%x ", &hash);
             hash = phash(hash);
             break;
         case DECIMAL_HM:
-            sscanf(mykey->kname, "%ld ", &hash);
+            sscanf(mykey->kname, "%d ", &hash);
             hash = phash(hash);
             break;
         case AB_HM:
-            sscanf(mykey->kname, "%lx %lx ", &a, &b);
+            sscanf(mykey->kname, "%x %x ", &a, &b);
             hash = phash(a, b);
             break;
         case ABDEC_HM:
-            sscanf(mykey->kname, "%ld %ld ", &a, &b);
+            sscanf(mykey->kname, "%d %d ", &a, &b);
             hash = phash(a, b);
             break;
         }
@@ -116,17 +119,17 @@ static void driver(hashform *form)
 }
 
 
-void usage_error(void)
+static void usage_error(void)
 {
     printf("usage is the same as perfect (which see)\n");
-    exit(SUCCESS);
+    exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char *argv[])
 {
     hashform form;
     char     *c;
-    int mode_given = 0;
+    bool mode_given = false;
 
     form.mode = NORMAL_HM;
 
@@ -146,7 +149,7 @@ int main(int argc, char *argv[])
             case 'd': case 'D':
             case 'a': case 'A':
             case 'b': case 'B':
-                if (mode_given == TRUE)
+                if (mode_given == true)
                     usage_error();
                 switch (*c) {
                 case 'n': case 'N':
@@ -162,7 +165,7 @@ int main(int argc, char *argv[])
                 case 'b': case 'B':
                     form.mode = ABDEC_HM; break;
                 }
-                mode_given = TRUE;
+                mode_given = true;
                 break;
             case 'm': case 'M':
             case 'p': case 'P':
