@@ -4,6 +4,7 @@ Test a perfect hash.
 By Bob Jenkins.  Public Domain.
 ----------------------------------------------------------------------------
 */
+#include <stdint.h>
 #ifndef STANDARD
 #include "standard.h"
 #endif
@@ -32,30 +33,25 @@ typedef  struct hashform  hashform;
 struct key
 {
   char *kname;
-  ub4   klen;
+  uint32_t   klen;
   struct key *knext;
 };
 typedef  struct key  key;
 
 /* get the list of keys */
-static void getkeys(keys, nkeys, textroot, keyroot)
-key    **keys;        /* list of all keys */
-ub4     *nkeys;       /* number of keys */
-reroot  *textroot;    /* get space to store key text */
-reroot  *keyroot;     /* get space for keys */
+static void getkeys(key **keys, uint32_t *nkeys, reroot *textroot, reroot *keyroot)
 {
   key  *mykey;
   char *mytext;
   mytext = (char *)renew(textroot);
   *keys  = (key *)0;
-  *nkeys = (ub4)0;
+  *nkeys = (uint32_t)0;
   while (fgets(mytext, MAXKEYLEN, stdin))
   {
-    ub4 i;
     mykey = (key *)renew(keyroot);
-    mykey->kname = (ub1 *)mytext;
+    mykey->kname = (uint8_t *)mytext;
     mytext = (char *)renew(textroot);
-    mykey->klen  = (ub4)(strlen((char *)mykey->kname)-1);
+    mykey->klen  = (uint32_t)(strlen((char *)mykey->kname)-1);
     mykey->knext = *keys;
     *keys = mykey;
     ++*nkeys;
@@ -69,12 +65,11 @@ reroot  *keyroot;     /* get space for keys */
 Read in the keys, find the hash, and write the .c and .h files
 ------------------------------------------------------------------------------
 */
-void driver(form)
-hashform *form;
+static void driver(hashform *form)
 {
-  ub4     nkeys;      /* number of keys */
-  key    *keys;       /* head of list of keys */
-  key    *mykey;
+  uint32_t nkeys;      /* number of keys */
+  key *keys;       /* head of list of keys */
+  key *mykey;
   reroot *textroot;   /* MAXKEYLEN-character text lines */
   reroot *keyroot;    /* source of keys */
 
@@ -88,10 +83,10 @@ hashform *form;
 
   for (mykey=keys; mykey; mykey=mykey->knext)
   {
-    ub4 hash;
-    ub4 i;
-    ub4 a;
-    ub4 b;
+    uint32_t hash;
+    uint32_t i;
+    uint32_t a;
+    uint32_t b;
     switch(form->mode)
     {
     case NORMAL_HM:
@@ -131,15 +126,13 @@ hashform *form;
 }
 
 
-void usage_error()
+void usage_error(void)
 {
   printf("usage is the same as perfect (which see)\n");
   exit(SUCCESS);
 }
 
-int main(argc, argv)
-int    argc;
-char **argv;
+int main(int argc, char *argv[])
 {
   hashform  form;
   char     *c;
