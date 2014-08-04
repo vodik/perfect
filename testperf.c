@@ -4,16 +4,12 @@
  * By Bob Jenkins.  Public Domain.
  * ----------------------------------------------------------------------------
  */
+
 #include <stdint.h>
-#ifndef STANDARD
+
 #include "standard.h"
-#endif
-#ifndef RECYCLE
 #include "recycle.h"
-#endif
-#ifndef PHASH
 #include "phash.h"
-#endif
 
 /* user directives: perfect hash? minimal perfect hash? input is an int? */
 struct hashform {

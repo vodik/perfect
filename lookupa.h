@@ -7,12 +7,9 @@
  * ------------------------------------------------------------------------------
  */
 
-#ifndef STANDARD
-#include "standard.h"
-#endif
+#pragma once
 
-#ifndef LOOKUPA
-#define LOOKUPA
+#include "standard.h"
 
 #define CHECKSTATE 8
 #define hashsize(n) ((uint32_t)1 << (n))
@@ -20,4 +17,3 @@
 
 uint32_t lookup(uint8_t *k, uint32_t length, uint32_t level);
 void checksum(uint8_t *k, uint32_t length, uint32_t *state);
-#endif /* LOOKUPA */

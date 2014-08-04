@@ -13,15 +13,11 @@
  * --------------------------------------------------------------------
  */
 
-#ifndef STANDARD
-# include "standard.h"
-#endif
-#ifndef RECYCLE
-# include "recycle.h"
-#endif
+#include "recycle.h"
 
 #include <stdlib.h>
 #include <memory.h>
+#include "standard.h"
 
 reroot *remkroot(size_t size)
 {

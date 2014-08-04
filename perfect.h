@@ -8,14 +8,10 @@
  * ------------------------------------------------------------------------------
  */
 
-#ifndef STANDARD
-#include "standard.h"
-#endif
-
-#ifndef PERFECT
-#define PERFECT
+#pragma once
 
 #include <stdbool.h>
+#include "standard.h"
 
 #define MAXKEYLEN 30                              /* maximum length of a key */
 #define USE_SCRAMBLE  4096           /* use scramble if blen >= USE_SCRAMBLE */
@@ -123,5 +119,3 @@ void findhash(bstuff **tabb, uint32_t *alen, uint32_t *blen, uint32_t *salt,
 
 bool inithex(key *keys, uint32_t nkeys, uint32_t alen, uint32_t blen, uint32_t salt,
              gencode *final, hashform *form);
-
-#endif /* PERFECT */

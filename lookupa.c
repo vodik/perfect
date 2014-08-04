@@ -5,12 +5,9 @@
  * Source is http://burtleburtle.net/bob/c/lookupa.c
  * --------------------------------------------------------------------
  */
-#ifndef STANDARD
-#include "standard.h"
-#endif
-#ifndef LOOKUPA
+
 #include "lookupa.h"
-#endif
+#include "standard.h"
 
 /*
  * --------------------------------------------------------------------

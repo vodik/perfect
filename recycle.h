@@ -13,12 +13,8 @@
  * --------------------------------------------------------------------
  */
 
-#ifndef STANDARD
+#pragma once
 #include "standard.h"
-#endif
-
-#ifndef RECYCLE
-#define RECYCLE
 
 #define RESTART    0
 #define REMAX      32000
@@ -59,4 +55,3 @@ char    *renewx(struct reroot *r);
 /* malloc, but complain to stderr and exit program if no joy */
 /* use plain free() to free memory allocated by remalloc() */
 char    *remalloc(size_t len, char *purpose);
-#endif  /* RECYCLE */

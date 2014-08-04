@@ -46,22 +46,14 @@
  * ------------------------------------------------------------------------------
  */
 
-#ifndef STANDARD
-#include "standard.h"
-#endif
-#ifndef LOOKUPA
-#include "lookupa.h"
-#endif
-#ifndef RECYCLE
-#include "recycle.h"
-#endif
-#ifndef PERFECT
 #include "perfect.h"
-#endif
 
 #include <stdlib.h>
 #include <stdbool.h>
 #include <memory.h>
+#include "standard.h"
+#include "lookupa.h"
+#include "recycle.h"
 
 /*
  * ------------------------------------------------------------------------------
