@@ -11,7 +11,6 @@
 #include <stdint.h>
 
 #define UB4BITS sizeof(uint32_t) * 8
-typedef                 int word;   /* fastest type available */
 
 #define bis(target, mask)  ((target) |= (mask))
 #define bic(target, mask)  ((target) &= ~(mask))

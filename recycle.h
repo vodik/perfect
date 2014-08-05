@@ -29,7 +29,7 @@ struct reroot {
     struct recycle *trash;   /* list of deleted items */
     size_t size;             /* size of an item */
     size_t logsize;          /* log_2 of number of items in a block */
-    word numleft;            /* number of bytes left in this block */
+    int numleft;             /* number of bytes left in this block */
 };
 typedef  struct reroot reroot;
 
