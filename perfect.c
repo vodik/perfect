@@ -794,11 +794,11 @@ static void getkeys(key **keys, uint32_t *nkeys, reroot *textroot, reroot *keyro
         if (form->mode == AB_HM) {
             sscanf(mytext, "%x %x ", &mykey->a_k, &mykey->b_k);
         }else if (form->mode == ABDEC_HM) {
-            sscanf(mytext, "%d %d ", &mykey->a_k, &mykey->b_k);
+            sscanf(mytext, "%u %u ", &mykey->a_k, &mykey->b_k);
         }else if (form->mode == HEX_HM) {
             sscanf(mytext, "%x ", &mykey->hash_k);
         }else if (form->mode == DECIMAL_HM) {
-            sscanf(mytext, "%d ", &mykey->hash_k);
+            sscanf(mytext, "%u ", &mykey->hash_k);
         }else  {
             mykey->name_k = (uint8_t*)mytext;
             mytext = (char*)renew(textroot);
