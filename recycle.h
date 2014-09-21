@@ -14,7 +14,8 @@
  */
 
 #pragma once
-#include "standard.h"
+
+#include <stdlib.h>
 
 #define RESTART    0
 #define REMAX      32000

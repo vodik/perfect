@@ -16,8 +16,11 @@
 #include "recycle.h"
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
 #include <memory.h>
-#include "standard.h"
+
+#define align(a) (((uint32_t)a + (sizeof(void *) - 1)) & (~(sizeof(void *) - 1)))
 
 reroot *remkroot(size_t size)
 {

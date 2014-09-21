@@ -9,7 +9,8 @@
 
 #pragma once
 
-#include "standard.h"
+#include <stdlib.h>
+#include <stdint.h>
 
 #define CHECKSTATE 8
 #define hashsize(n) ((uint32_t)1 << (n))

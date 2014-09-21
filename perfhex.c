@@ -16,11 +16,13 @@
 
 #include "perfect.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "standard.h"
 #include "lookupa.h"
 #include "recycle.h"
+
+#define UB4BITS sizeof(uint32_t) * 8
 
 /*
  * Find a perfect hash when there is only one key.  Zero instructions.
@@ -691,8 +693,9 @@ static bool testeight(key *keys, uint8_t badmask)
     key *mykey;
 
     for (mykey = keys; mykey; mykey = mykey->next_k) {
-        if (bit(mask, 1 << mykey->a_k)) return false;
-        bis(mask, 1 << mykey->a_k);
+        if (mask & 1 << mykey->a_k)
+            return false;
+        mask |= 1 << mykey->a_k;
     }
     return true;
 }
@@ -717,7 +720,7 @@ static bool hexeight(key *keys, uint32_t nkeys, gencode *final, hashform *form)
     badmask = 0;
     if (form->perfect == MINIMAL_HP) {
         for (i = nkeys; i < 8; ++i)
-            bis(badmask, (1 << i));
+            badmask |= 1 << i;
     }
 
     /* one instruction */

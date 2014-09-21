@@ -49,11 +49,13 @@
 #include "perfect.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdbool.h>
 #include <memory.h>
-#include "standard.h"
 #include "lookupa.h"
 #include "recycle.h"
+
+#define UB4BITS sizeof(uint32_t) * 8
 
 /*
  * ------------------------------------------------------------------------------
@@ -815,9 +817,6 @@ static void make_h(uint32_t blen, uint32_t smax, uint32_t nkeys, uint32_t salt)
     FILE *f;
     f = fopen("phash.h", "w");
     fprintf(f, "/* Perfect hash definitions */\n");
-    fprintf(f, "#ifndef STANDARD\n");
-    fprintf(f, "#include \"standard.h\"\n");
-    fprintf(f, "#endif /* STANDARD */\n");
     fprintf(f, "#ifndef PHASH\n");
     fprintf(f, "#define PHASH\n");
     fprintf(f, "\n");

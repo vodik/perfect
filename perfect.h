@@ -11,7 +11,7 @@
 #pragma once
 
 #include <stdbool.h>
-#include "standard.h"
+#include <stdint.h>
 
 #define MAXKEYLEN 30                              /* maximum length of a key */
 #define USE_SCRAMBLE  4096           /* use scramble if blen >= USE_SCRAMBLE */

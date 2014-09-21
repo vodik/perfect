@@ -11,7 +11,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "standard.h"
 #include "recycle.h"
 #include "phash.h"
 
