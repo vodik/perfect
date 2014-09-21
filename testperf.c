@@ -11,7 +11,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "recycle.h"
 #include "phash.h"
 
 /* user directives: perfect hash? minimal perfect hash? input is an int? */
@@ -36,23 +35,23 @@ struct key {
 typedef  struct key key;
 
 /* get the list of keys */
-static void getkeys(key **keys, uint32_t *nkeys, reroot *textroot, reroot *keyroot)
+static void getkeys(key **keys, uint32_t *nkeys)
 {
     key  *mykey;
     char *mytext;
-    mytext = (char*)renew(textroot);
+    mytext = malloc(MAXKEYLEN);
     *keys = (key*)0;
     *nkeys = (uint32_t)0;
     while (fgets(mytext, MAXKEYLEN, stdin)) {
-        mykey = (key*)renew(keyroot);
+        mykey = malloc(sizeof(key));
         mykey->kname = (char *)mytext;
-        mytext = (char *)renew(textroot);
+        mytext = malloc(MAXKEYLEN);
         mykey->klen = (uint32_t)(strlen((char*)mykey->kname) - 1);
         mykey->knext = *keys;
         *keys = mykey;
         ++*nkeys;
     }
-    redel(textroot, mytext);
+    free(mytext);
 }
 
 /*
@@ -65,15 +64,9 @@ static void driver(hashform *form)
     uint32_t nkeys;    /* number of keys */
     key *keys;     /* head of list of keys */
     key *mykey;
-    reroot *textroot; /* MAXKEYLEN-character text lines */
-    reroot *keyroot;  /* source of keys */
-
-    /* set up memory sources */
-    textroot = remkroot((size_t)MAXKEYLEN);
-    keyroot = remkroot(sizeof(key));
 
     /* read in the list of keywords */
-    getkeys(&keys, &nkeys, textroot, keyroot);
+    getkeys(&keys, &nkeys);
     printf("Read in %d keys\n", nkeys);
 
     for (mykey = keys; mykey; mykey = mykey->knext) {
@@ -111,10 +104,6 @@ static void driver(hashform *form)
         }
         printf("%8d  %.*s\n", hash, mykey->klen, mykey->kname);
     }
-
-    /* clean up memory sources */
-    refree(textroot);
-    refree(keyroot);
 }
 
 
