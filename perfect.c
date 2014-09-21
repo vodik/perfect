@@ -817,8 +817,9 @@ static void make_h(uint32_t blen, uint32_t smax, uint32_t nkeys, uint32_t salt)
     FILE *f;
     f = fopen("phash.h", "w");
     fprintf(f, "/* Perfect hash definitions */\n");
-    fprintf(f, "#ifndef PHASH\n");
-    fprintf(f, "#define PHASH\n");
+    fprintf(f, "#pragma once\n");
+    fprintf(f, "\n");
+    fprintf(f, "#include <stdint.h>\n");
     fprintf(f, "\n");
     if (blen > 0) {
         if (smax <= UINT8_MAX + 1 || blen >= USE_SCRAMBLE)
@@ -843,9 +844,6 @@ static void make_h(uint32_t blen, uint32_t smax, uint32_t nkeys, uint32_t salt)
             salt * 0x9e3779b9);
     fprintf(f, "\n");
     fprintf(f, "uint32_t phash();\n");
-    fprintf(f, "\n");
-    fprintf(f, "#endif  /* PHASH */\n");
-    fprintf(f, "\n");
     fclose(f);
 }
 
@@ -856,12 +854,7 @@ static void make_c(bstuff *tab, uint32_t smax, uint32_t blen, uint32_t *scramble
     FILE *f;
     f = fopen("phash.c", "w");
     fprintf(f, "/* table for the mapping for the perfect hash */\n");
-    fprintf(f, "#ifndef STANDARD\n");
-    fprintf(f, "#include \"standard.h\"\n");
-    fprintf(f, "#endif /* STANDARD */\n");
-    fprintf(f, "#ifndef PHASH\n");
     fprintf(f, "#include \"phash.h\"\n");
-    fprintf(f, "#endif /* PHASH */\n");
     fprintf(f, "#ifndef LOOKUPA\n");
     fprintf(f, "#include \"lookupa.h\"\n");
     fprintf(f, "#endif /* LOOKUPA */\n");
