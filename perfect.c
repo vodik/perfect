@@ -53,7 +53,6 @@
 #include <stdbool.h>
 #include <memory.h>
 #include "lookupa.h"
-#include "recycle.h"
 
 #define UB4BITS sizeof(uint32_t) * 8
 
@@ -501,11 +500,9 @@ static void hash_ab(bstuff **tabb, uint32_t *alen, uint32_t *blen, uint32_t *sal
     }
 
     /* allocate working memory */
-    *tabb = (bstuff*)malloc((size_t)(sizeof(bstuff) * (*blen)));
-    tabq = (qstuff*)remalloc(sizeof(qstuff) * (*blen + 1), "perfect.c, tabq");
-    tabh = (hstuff*)remalloc(sizeof(hstuff) * (form->perfect == MINIMAL_HP ?
-                                               nkeys : *smax),
-                             "perfect.c, tabh");
+    *tabb = malloc(sizeof(bstuff) * (*blen));
+    tabq = malloc(sizeof(qstuff) * (*blen + 1));
+    tabh = malloc(sizeof(hstuff) * (form->perfect == MINIMAL_HP ? nkeys : *smax));
 
     /* check that (a,b) are distinct and put them in tabb indexed by b */
     (void)inittab(*tabb, *blen, keys, form, false);
@@ -520,9 +517,7 @@ static void hash_ab(bstuff **tabb, uint32_t *alen, uint32_t *blen, uint32_t *sal
             free((void*)tabh);
             *smax = *smax * 2;
             scrambleinit(scramble, *smax);
-            tabh = (hstuff*)remalloc(sizeof(hstuff) * (form->perfect == MINIMAL_HP ?
-                                                       nkeys : *smax),
-                                     "perfect.c, tabh");
+            tabh = malloc(sizeof(hstuff) * (form->perfect == MINIMAL_HP ? nkeys : *smax));
             if (!perfect(*tabb, tabh, tabq, *blen, *smax, scramble, nkeys, form)) {
                 printf("fatal error: Cannot find perfect hash for user (A,B) pairs\n");
                 exit(EXIT_SUCCESS);
@@ -697,12 +692,9 @@ void findhash(bstuff **tabb, uint32_t *alen, uint32_t *blen, uint32_t *salt,
     maxalen = (form->perfect == MINIMAL_HP) ? *smax / 2 : *smax;
 
     /* allocate working memory */
-    *tabb = (bstuff*)remalloc((size_t)(sizeof(bstuff) * (*blen)),
-                              "perfect.c, tabb");
-    tabq = (qstuff*)remalloc(sizeof(qstuff) * (*blen + 1), "perfect.c, tabq");
-    tabh = (hstuff*)remalloc(sizeof(hstuff) * (form->perfect == MINIMAL_HP ?
-                                               nkeys : *smax),
-                             "perfect.c, tabh");
+    *tabb = malloc(sizeof(bstuff) * (*blen));
+    tabq = malloc(sizeof(qstuff) * (*blen + 1));
+    tabh = malloc(sizeof(hstuff) * (form->perfect == MINIMAL_HP ? nkeys : *smax));
 
     /* Actually find the perfect hash */
     *salt = 0;
@@ -782,15 +774,15 @@ void findhash(bstuff **tabb, uint32_t *alen, uint32_t *blen, uint32_t *salt,
  */
 
 /* get the list of keys */
-static void getkeys(key **keys, uint32_t *nkeys, reroot *textroot, reroot *keyroot, hashform *form)
+static void getkeys(key **keys, uint32_t *nkeys, hashform *form)
 {
     key  *mykey;
     char *mytext;
-    mytext = (char*)renew(textroot);
+    mytext = malloc(MAXKEYLEN);
     *keys = 0;
     *nkeys = 0;
     while (fgets(mytext, MAXKEYLEN, stdin)) {
-        mykey = (key*)renew(keyroot);
+        mykey = malloc(sizeof(key));
         if (form->mode == AB_HM) {
             sscanf(mytext, "%x %x ", &mykey->a_k, &mykey->b_k);
         }else if (form->mode == ABDEC_HM) {
@@ -801,14 +793,14 @@ static void getkeys(key **keys, uint32_t *nkeys, reroot *textroot, reroot *keyro
             sscanf(mytext, "%u ", &mykey->hash_k);
         }else  {
             mykey->name_k = (uint8_t*)mytext;
-            mytext = (char*)renew(textroot);
+            mytext = malloc(MAXKEYLEN);
             mykey->len_k = (uint32_t)(strlen((char*)mykey->name_k) - 1);
         }
         mykey->next_k = *keys;
         *keys = mykey;
         ++*nkeys;
     }
-    redel(textroot, mytext);
+    free(mytext);
 }
 
 /* make the .h file */
@@ -963,17 +955,11 @@ static void driver(hashform *form)
     uint32_t alen;                                /* a in 0..alen-1, a power of 2 */
     uint32_t blen;                                /* b in 0..blen-1, a power of 2 */
     uint32_t salt;                           /* a parameter to the hash function */
-    reroot   *textroot;                    /* MAXKEYLEN-character text lines */
-    reroot   *keyroot;                                     /* source of keys */
     gencode final;                                    /* code for final hash */
     uint32_t i;
     uint32_t scramble[SCRAMBLE_LEN];               /* used in final hash function */
     char buf[10][80];                           /* buffer for generated code */
     char     *buf2[10];                           /* also for generated code */
-
-    /* set up memory sources */
-    textroot = remkroot((size_t)MAXKEYLEN);
-    keyroot = remkroot(sizeof(key));
 
     /* set up code for final hash */
     final.line = buf2;
@@ -982,7 +968,7 @@ static void driver(hashform *form)
     for (i = 0; i < 10; ++i) final.line[i] = buf[i];
 
     /* read in the list of keywords */
-    getkeys(&keys, &nkeys, textroot, keyroot, form);
+    getkeys(&keys, &nkeys, form);
     printf("Read in %d keys\n", nkeys);
 
     /* find the hash */
@@ -998,9 +984,7 @@ static void driver(hashform *form)
     printf("Wrote phash.c\n");
 
     /* clean up memory sources */
-    refree(textroot);
-    refree(keyroot);
-    free((void*)tab);
+    free(tab);
     printf("Cleaned up\n");
 }
 
