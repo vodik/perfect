@@ -66,7 +66,7 @@
 uint32_t mylog2(uint32_t val)
 {
     uint32_t i;
-    for (i = 0; ((uint32_t)1 << i) < val; ++i) ;
+    for (i = 0; 1u << i < val; ++i) ;
     return i;
 }
 
@@ -75,7 +75,7 @@ uint32_t mylog2(uint32_t val)
 static uint32_t permute(uint32_t x, uint32_t nbits)
 {
     int i;
-    int mask = ((uint32_t)1 << nbits) - 1;                            /* all ones */
+    int mask = (1 << nbits) - 1;                            /* all ones */
     int const2 = 1 + nbits / 2;
     int const3 = 1 + nbits / 3;
     int const4 = 1 + nbits / 4;
@@ -108,7 +108,7 @@ static void checkdup(key *key1, key *key2, hashform *form)
     switch (form->hashtype) {
     case STRING_HT:
         if ((key1->len_k == key2->len_k) &&
-            !memcmp(key1->name_k, key2->name_k, (size_t)key1->len_k)) {
+            !memcmp(key1->name_k, key2->name_k, key1->len_k)) {
             fprintf(stderr, "perfect.c: Duplicates keys!  %.*s\n",
                     key1->len_k, key1->name_k);
             exit(EXIT_SUCCESS);
@@ -125,7 +125,7 @@ static void checkdup(key *key1, key *key2, hashform *form)
         exit(EXIT_SUCCESS);
         break;
     default:
-        fprintf(stderr, "perfect.c: Illegal hash type %d\n", (uint32_t)form->hashtype);
+        fprintf(stderr, "perfect.c: Illegal hash type %d\n", form->hashtype);
         exit(EXIT_SUCCESS);
         break;
     }
@@ -141,7 +141,7 @@ static int inittab(bstuff *tabb, uint32_t blen, key *keys, hashform *form, int c
     int nocollision = true;
     key *mykey;
 
-    memset((void*)tabb, 0, (size_t)(sizeof(bstuff) * blen));
+    memset(tabb, 0, sizeof(bstuff) * blen);
 
     /* Two keys with the same (a,b) guarantees a collision */
     for (mykey = keys; mykey; mykey = mykey->next_k) {
@@ -228,7 +228,7 @@ static void initinl(key *keys, uint32_t alen, uint32_t blen, uint32_t smax, uint
     uint32_t initval = salt * 0x9e3779b9; /* the golden ratio; an arbitrary value */
 
     /* It's more important to have b uniform than a, so b is the low bits */
-    for (mykey = keys; mykey != (key*)0; mykey = mykey->next_k) {
+    for (mykey = keys; mykey != NULL; mykey = mykey->next_k) {
         uint32_t hash = initval;
         uint32_t i;
         for (i = 0; i < mykey->len_k; ++i) {
@@ -326,7 +326,7 @@ static int apply(bstuff *tabb, hstuff *tabh, qstuff *tabq, uint32_t blen, uint32
         for (mykey = pb->list_b; mykey; mykey = mykey->nextb_k) {
             hash = mykey->a_k ^ stabb;
             if (mykey == tabh[hash].key_h) { /* erase hash for all of child's siblings */
-                tabh[hash].key_h = (key*)0;
+                tabh[hash].key_h = NULL;
             }
         }
 
@@ -392,7 +392,7 @@ static int augment(bstuff *tabb, hstuff *tabh, qstuff *tabq, uint32_t blen, uint
             break;                            /* don't do transitive closure */
 
         for (i = 0; i < limit; ++i) {
-            bstuff *childb = (bstuff*)0;        /* the b that this i maps to */
+            bstuff *childb = NULL;         /* the b that this i maps to */
             key    *mykey;                 /* for walking through myb's keys */
 
             for (mykey = myb->list_b; mykey; mykey = mykey->nextb_k) {
@@ -443,10 +443,8 @@ static int perfect(bstuff *tabb, hstuff *tabh, qstuff *tabq, uint32_t blen, uint
     uint32_t i, j;
 
     /* clear any state from previous attempts */
-    memset((void*)tabh, 0,
-           (size_t)(sizeof(hstuff) *
-                    ((form->perfect == MINIMAL_HP) ? nkeys : smax)));
-    memset((void*)tabq, 0, (size_t)(sizeof(qstuff) * (blen + 1)));
+    memset(tabh, 0, sizeof(hstuff) * ((form->perfect == MINIMAL_HP) ? nkeys : smax));
+    memset(tabq, 0, sizeof(qstuff) * (blen + 1));
 
     for (maxkeys = 0, i = 0; i < blen; ++i)
         if (tabb[i].listlen_b > maxkeys)
@@ -481,13 +479,13 @@ static void hash_ab(bstuff **tabb, uint32_t *alen, uint32_t *blen, uint32_t *sal
     int used_tab;
 
     /* initially make smax the first power of two bigger than nkeys */
-    *smax = ((uint32_t)1 << mylog2(nkeys));
+    *smax = 1u << mylog2(nkeys);
     scrambleinit(scramble, *smax);
 
     /* set *alen and *blen based on max A and B from user */
     *alen = 1;
     *blen = 1;
-    for (mykey = keys; mykey != (key*)0; mykey = mykey->next_k) {
+    for (mykey = keys; mykey != NULL; mykey = mykey->next_k) {
         while (*alen <= mykey->a_k) *alen *= 2;
         while (*blen <= mykey->b_k) *blen *= 2;
     }
@@ -514,7 +512,7 @@ static void hash_ab(bstuff **tabb, uint32_t *alen, uint32_t *blen, uint32_t *sal
             exit(EXIT_SUCCESS);
         }else  {
             /* try with 2*smax */
-            free((void*)tabh);
+            free(tabh);
             *smax = *smax * 2;
             scrambleinit(scramble, *smax);
             tabh = malloc(sizeof(hstuff) * (form->perfect == MINIMAL_HP ? nkeys : *smax));
@@ -544,8 +542,8 @@ static void hash_ab(bstuff **tabb, uint32_t *alen, uint32_t *blen, uint32_t *sal
 
     printf("success, found a perfect hash\n");
 
-    free((void*)tabq);
-    free((void*)tabh);
+    free(tabq);
+    free(tabh);
 }
 
 
@@ -592,11 +590,11 @@ static void initalen(uint32_t *alen, uint32_t *blen, uint32_t *smax, uint32_t nk
         }
 
         *alen = ((form->hashtype == INT_HT) && *smax > 131072) ?
-                ((uint32_t)1 << (UB4BITS - mylog2(*blen))) : /* distinct keys => distinct (A,B) */
+                1u << (UB4BITS - mylog2(*blen)) : /* distinct keys => distinct (A,B) */
                 *smax;               /* no reason to restrict alen to smax/2 */
         if ((form->hashtype == INT_HT) && *smax < 32)
             *blen = *smax;                /* go for function speed not space */
-        else if (*smax / 4 <= (1 << 14))
+        else if (*smax / 4 <= (1u << 14))
             *blen = ((nkeys <= *smax * 0.56) ? *smax / 32 :
                      (nkeys <= *smax * 0.74) ? *smax / 16 : *smax / 8);
         else
@@ -684,7 +682,7 @@ void findhash(bstuff **tabb, uint32_t *alen, uint32_t *blen, uint32_t *salt,
     }
 
     /* guess initial values for smax, alen and blen */
-    *smax = ((uint32_t)1 << mylog2(nkeys));
+    *smax = 1u << mylog2(nkeys);
     initalen(alen, blen, smax, nkeys, form);
 
     scrambleinit(scramble, *smax);
@@ -721,8 +719,8 @@ void findhash(bstuff **tabb, uint32_t *alen, uint32_t *blen, uint32_t *salt,
                     *blen *= 2;
                     free(tabq);
                     free(*tabb);
-                    *tabb = (bstuff*)malloc((size_t)(sizeof(bstuff) * (*blen)));
-                    tabq = (qstuff*)malloc((size_t)(sizeof(qstuff) * (*blen + 1)));
+                    *tabb = malloc(sizeof(bstuff) * (*blen));
+                    tabq = malloc(sizeof(qstuff) * (*blen + 1));
                 }else  {
                     duplicates(*tabb, *blen, keys, form); /* check for duplicates */
                     printf("fatal error: Cannot perfect hash: cannot find distinct (A,B)\n");
@@ -744,8 +742,8 @@ void findhash(bstuff **tabb, uint32_t *alen, uint32_t *blen, uint32_t *salt,
                     *blen *= 2;
                     free(*tabb);
                     free(tabq);
-                    *tabb = (bstuff*)malloc((size_t)(sizeof(bstuff) * (*blen)));
-                    tabq = (qstuff*)malloc((size_t)(sizeof(qstuff) * (*blen + 1)));
+                    *tabb = malloc(sizeof(bstuff) * (*blen));
+                    tabq = malloc(sizeof(qstuff) * (*blen + 1));
                     --trysalt; /* we know this salt got distinct (A,B) */
                 }else  {
                     printf("fatal error: Cannot perfect hash: cannot build tab[]\n");
@@ -763,8 +761,8 @@ void findhash(bstuff **tabb, uint32_t *alen, uint32_t *blen, uint32_t *salt,
     printf("built perfect hash table of size %d\n", *blen);
 
     /* free working memory */
-    free((void*)tabh);
-    free((void*)tabq);
+    free(tabh);
+    free(tabq);
 }
 
 /*
@@ -794,7 +792,7 @@ static void getkeys(key **keys, uint32_t *nkeys, hashform *form)
         }else  {
             mykey->name_k = (uint8_t*)mytext;
             mytext = malloc(MAXKEYLEN);
-            mykey->len_k = (uint32_t)(strlen((char*)mykey->name_k) - 1);
+            mykey->len_k = strlen((char*)mykey->name_k) - 1;
         }
         mykey->next_k = *keys;
         *keys = mykey;

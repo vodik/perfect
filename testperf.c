@@ -40,13 +40,13 @@ static void getkeys(key **keys, uint32_t *nkeys)
     key  *mykey;
     char *mytext;
     mytext = malloc(MAXKEYLEN);
-    *keys = (key*)0;
-    *nkeys = (uint32_t)0;
+    *keys = NULL;
+    *nkeys = 0;
     while (fgets(mytext, MAXKEYLEN, stdin)) {
         mykey = malloc(sizeof(key));
-        mykey->kname = (char *)mytext;
+        mykey->kname = mytext;
         mytext = malloc(MAXKEYLEN);
-        mykey->klen = (uint32_t)(strlen((char*)mykey->kname) - 1);
+        mykey->klen = strlen(mykey->kname) - 1;
         mykey->knext = *keys;
         *keys = mykey;
         ++*nkeys;

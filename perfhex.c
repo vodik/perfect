@@ -65,7 +65,7 @@ static void hextwo(key *keys, gencode *final)
 
     /* two instructions */
     for (i = 0; i < UB4BITS; ++i) {
-        if ((a & ((uint32_t)1 << i)) != (b & ((uint32_t)1 << i))) break;
+        if ((a & (1u << i)) != (b & (1u << i))) break;
     }
     /* h2b: 4,6 */
     sprintf(final->line[0], "  uint32_t rsl = ((val << %d) & 1);\n", i);
@@ -132,11 +132,11 @@ static void hexthree(key *keys, gencode *final, hashform *form)
     if (x != y && x != z && y != z) {
         if (form->perfect == NORMAL_HP || (x != 3 && y != 3 && z != 3)) {
             /* h3c: 3fffffff, 7fffffff, bfffffff */
-            sprintf(final->line[0], "  uint32_t rsl = (val >> %d);\n", (uint32_t)(UB4BITS - 2));
+            sprintf(final->line[0], "  uint32_t rsl = (val >> %ld);\n", UB4BITS - 2);
         }else  {
             /* h3d: 7fffffff, bfffffff, ffffffff */
-            sprintf(final->line[0], "  uint32_t rsl = ((val >> %d) ^ %d);\n",
-                    (uint32_t)(UB4BITS - 2), find_adder(x, y, z));
+            sprintf(final->line[0], "  uint32_t rsl = ((val >> %ld) ^ %d);\n",
+                    UB4BITS - 2, find_adder(x, y, z));
         }
         return;
     }
@@ -222,7 +222,7 @@ static void hexthree(key *keys, gencode *final, hashform *form)
  */
 static int testfour(uint32_t a, uint32_t b, uint32_t c, uint32_t d)
 {
-    uint32_t mask = (1 << a) ^ (1 << b) ^ (1 << c) ^ (1 << d);
+    uint32_t mask = (1u << a) ^ (1u << b) ^ (1u << c) ^ (1u << d);
     return(mask == 0xf);
 }
 
@@ -266,7 +266,7 @@ static void hexfour(key *keys, gencode *final)
         y = c >> (UB4BITS - 2);
         z = d >> (UB4BITS - 2);
         if (testfour(w, x, y, z)) { /* h4b: 0fffffff, 4fffffff, 8fffffff, cfffffff */
-            sprintf(final->line[0], "  uint32_t rsl = (val >> %d);\n", (uint32_t)(UB4BITS - 2));
+            sprintf(final->line[0], "  uint32_t rsl = (val >> %ld);\n", UB4BITS - 2);
             return;
         }
     }
@@ -627,7 +627,7 @@ static void hexfour(key *keys, gencode *final)
             }else if ((m != o - 1) && (m != n - 1) && (o != m - 1) && (o != n - 1)) {
                 final->used = 3;
                 sprintf(final->line[0], "  uint32_t newval = val & 0x%x;\n",
-                        (((uint32_t)1 << m) ^ ((uint32_t)1 << n) ^ ((uint32_t)1 << o)));
+                        ((1u << m) ^ (1u << n) ^ (1u << o)));
                 if (o == 0) {                     /* 0x00,0x01,0x04,0x10 */
                     sprintf(final->line[1], "  uint32_t b = -newval;\n");
                 }else  {                          /* 0x00,0x04,0x09,0x10 */
@@ -693,9 +693,9 @@ static bool testeight(key *keys, uint8_t badmask)
     key *mykey;
 
     for (mykey = keys; mykey; mykey = mykey->next_k) {
-        if (mask & 1 << mykey->a_k)
+        if (mask & 1u << mykey->a_k)
             return false;
-        mask |= 1 << mykey->a_k;
+        mask |= 1u << mykey->a_k;
     }
     return true;
 }
@@ -720,7 +720,7 @@ static bool hexeight(key *keys, uint32_t nkeys, gencode *final, hashform *form)
     badmask = 0;
     if (form->perfect == MINIMAL_HP) {
         for (i = nkeys; i < 8; ++i)
-            badmask |= 1 << i;
+            badmask |= 1u << i;
     }
 
     /* one instruction */
@@ -1037,20 +1037,20 @@ static void setlow(key *keys, gencode *final)
     uint32_t firstkey;
 
     /* mark the interesting bits in final->mask */
-    final->diffbits = (uint32_t)0;
+    final->diffbits = 0;
     if (keys) firstkey = keys->hash_k;
-    for (mykey = keys; mykey != (key*)0; mykey = mykey->next_k)
+    for (mykey = keys; mykey != NULL; mykey = mykey->next_k)
         final->diffbits |= (firstkey ^ mykey->hash_k);
 
     /* find the lowest interesting bit */
     for (i = 0; i < UB4BITS; ++i)
-        if (final->diffbits & (((uint32_t)1) << i))
+        if (final->diffbits & (1u << i))
             break;
     final->lowbit = i;
 
     /* find the highest interesting bit */
     for (i = UB4BITS; --i; )
-        if (final->diffbits & (((uint32_t)1) << i))
+        if (final->diffbits & (1u << i))
             break;
     final->highbit = i;
 }
